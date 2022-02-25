@@ -1,0 +1,6 @@
+
+.DS_Store
+prototype/datasets/*
+prototype/coordinates3D/*
+prototype/__pycache__/*
+prototype/.idea/*
