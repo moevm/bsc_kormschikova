@@ -19,9 +19,12 @@ CAMERA_MTX = np.array([[1000.95935, 0.0, 799.6486],
 MIN_MATCH_COUNT = 7
 DEPTH_DATA_WRITE = True
 SAVE_TMP_DATA = True
-FILE_3D = 'coordinates3D/coordinates3d_roof_correct.txt'
-FILE_PLY = 'coordinates3D/cloudsPLY/true_plus_filter.ply'
-VIDEO_NAME = '/distance_data/testing_roof_al_11'
+SAVE_CLOUD = True
+FILE_3D = 'coordinates3D/n.txt'
+FILE_PLY = 'coordinates3D/ne.ply'
+VIDEO_NAME = '/distance_data/02'
+
+
 def createExtrinsicParameters(rotationMat, translationMat):
     E = np.column_stack((rotationMat, translationMat))
     tmp = np.array([0,0,0,1])
@@ -51,29 +54,37 @@ def testing(datasetDir):
     img1_ = files[0]
     img1 = cv.imread(img1_, 1)
     time_steps, true_distance, ground_truth_t, ground_truth_r = dataset_unpack(datasetDir)[:4]
-    master.initAlgorithm(img1, FILE_3D)
-    master.openFileToWrite3DCoord()
+    master.initAlgorithm(img1, FILE_3D, datasetDir)
+    if SAVE_CLOUD:
+        master.openFileToWrite3DCoord()
     border = False
     # time_start = time.time()
 
-    for i, filename in enumerate(files[1:440]):
+    for i, filename in enumerate(files[1:]):
         print(i)
         img2 = filename
         camera_move = ground_truth_t[i:i + 2]
         img2 = cv.imread(img2, 1)
         delta_t = time_steps[i+1] - time_steps[i]
-        RFlag, LFlag, tmp = master.step_processing(img2, camera_move, ground_truth_r[i], ground_truth_t[i], delta_t, true_distance[i], border)
-        if RFlag:
-            print('Rborder', i)
-        if LFlag:
-            print('Lborder', i)
+        RFlag, LFlag, tmp, depIm = master.step_processing(img2, camera_move, ground_truth_r[i], ground_truth_t[i], delta_t, true_distance[i], border)
+        # if RFlag:
+        #     print('Rborder', i)
+        # if LFlag:
+        #     print('Lborder', i)
         border = RFlag or LFlag
+
+        #only for save depth img TMP
+        # fpath = datasetDir + '/distance/d'+str(i)+".png"
+        # cv.imwrite(fpath, depIm)
+
         # img1 = img2
-    print('proc end')
+    print('main proc end ')
     data_handler.graphDistance(true_distance, master.getMeanDistance(), master.getFilterMeanDistance(), master.getMeanDistanceOnlyB(), datasetDir)
     # time_end = time.time()
     # print("testing new time", time_start - time_end)
-    master.closeFileToWrite3DCoord()
+    if SAVE_CLOUD:
+        master.closeFileToWrite3DCoord()
+    io_ply_file.create_point_cloud(FILE_3D, FILE_PLY)
 
 
 def processing(datasetDir, ground_truth_t, ground_truth_r, true_distance):
@@ -83,12 +94,12 @@ def processing(datasetDir, ground_truth_t, ground_truth_r, true_distance):
     img1_ = files[0]
     img1 = cv.imread(img1_, 0)
     imgDepthAr = []
-    imgLineAr = []
-    coord3d = []
+    # imgLineAr = []
+    # coord3d = []
     distanceMean = []
     kp1, des1 = sift_algorithm(img1, SAVE_TMP_DATA, datasetDir + '/sift/_01' + '.png')
 
-    for i, filename in enumerate(files[1: ]):
+    for i, filename in enumerate(files[1:4]):
         print(i)
         img2 = filename
         name = img1_[-9:-4] + '-' + img2[-9:]
@@ -100,12 +111,9 @@ def processing(datasetDir, ground_truth_t, ground_truth_r, true_distance):
         kpFirst, depth, img3 = distance.depth(kp1, kp2, mat, camera_move, img1)
 
         md = distance.distanceMeanWeight(depth, kp1, img1.shape[:2])
-        # print('mean d: ', md)
         distanceMean.append(md)
         # coord3dtmp = distance.coordinates_2d_to_3d(kpFirst, depth, img1.shape[:2], img1)[0]
-        # print(coord3dtmp)
         # coord3dtmp = distance.pointToLocalDroneСoordinates(coord3dtmp, ground_truth_r[i], ground_truth_t[i])
-        # print(coord3dtmp)
         # coord3d.extend(coord3dtmp)
         # RFlag, LFlag, RoofFlag, imgLine = dbe.detectBorder(kpFirst, depth,  img1)
         tmpStr = 'Count matches: '+str(len(mat))+' frame: ' + str(i+1)
@@ -193,42 +201,38 @@ def sift_algorithm(img, save=False, filepath='s.png'):
     return kp, des
 
 
-def matches(firstDes, secondDes):
-    # FLANN parameters
-    FLANN_INDEX_KDTREE = 1
-    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-    search_params = dict(checks=50)  # or pass empty dictionary
-    flann = cv.FlannBasedMatcher(index_params, search_params)
-    matches = flann.knnMatch(firstDes, secondDes, k=2)
-    goodMatches = []
-    for i, (m, n) in enumerate(matches):
-        if m.distance < 0.5 * n.distance:
-            goodMatches.append(matches[i])
-    return goodMatches
-
-
-def saveMatches(matches, img1, kp1, img2, kp2, filepath='matches.jpg'):
-    matchesMask = [[1, 0] for i in range(len(matches))]
-    draw_params = dict(matchColor=(0, 255, 0),
-                       singlePointColor=(255, 0, 0),
-                       matchesMask=matchesMask[:],
-                       flags=cv.DrawMatchesFlags_DEFAULT)
-    img_3 = cv.drawMatchesKnn(img1, kp1, img2, kp2, matches[:], None, **draw_params)
-    cv.imwrite(filepath, img_3)
 
 
 
 
-# testLines('dataset_02')
-# processing('dataset_05')
-# processing('dataset06_ud')
-# dataset = 'datasets/datasets_roof/roof06'
-
-# dataset = 'datasets/dataset_06_new'
-dataset = 'datasets/datasets_roof/roof06'
+FILE_3D = 'coordinates3D/tmp_start.txt'
+FILE_PLY = 'coordinates3D/tmp_start_ildie.ply' #
+dataset = 'datasets/new_datasets/with_start'
+io_ply_file.create_point_cloud(FILE_3D, FILE_PLY)
 
 testing(dataset)
-io_ply_file.create_point_cloud(FILE_3D, FILE_PLY)
+
+# FILE_PLY = 'coordinates3D/tmp_start_d2_offset.ply' #
+
+#TODO: add to dataset unpack
+offset_tmp = np.genfromtxt(dataset + "/" + "start_trajectory.txt", dtype=str)
+print(offset_tmp)
+
+offset = [float(offset_tmp[0][2:])/100,
+        float(offset_tmp[1][2:])/100,
+        float(offset_tmp[2][2:])/100]
+
+# io_ply_file.create_point_cloud(FILE_3D, FILE_PLY, offset )
+
+
+#
+# FILE_3D = 'coordinates3D/dist_er_d.txt'
+# FILE_PLY = 'coordinates3D/dist_er_d.ply'
+# dataset = 'datasets/new_datasets/und/dt2'
+# testing(dataset)
+
+
+
 # time_steps, true_distance, ground_truth_t, ground_truth_r = dataset_unpack(dataset)[:4]
 # processing(dataset, ground_truth_t, ground_truth_r, true_distance)
 # # #
@@ -319,3 +323,26 @@ io_ply_file.create_point_cloud(FILE_3D, FILE_PLY)
 #     return
 
 #
+
+def matches(firstDes, secondDes):
+    # FLANN parameters
+    FLANN_INDEX_KDTREE = 1
+    index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+    search_params = dict(checks=50)  # or pass empty dictionary
+    flann = cv.FlannBasedMatcher(index_params, search_params)
+    matches = flann.knnMatch(firstDes, secondDes, k=2)
+    goodMatches = []
+    for i, (m, n) in enumerate(matches):
+        if m.distance < 0.5 * n.distance:
+            goodMatches.append(matches[i])
+    return goodMatches
+
+
+def saveMatches(matches, img1, kp1, img2, kp2, filepath='matches.jpg'):
+    matchesMask = [[1, 0] for i in range(len(matches))]
+    draw_params = dict(matchColor=(0, 255, 0),
+                       singlePointColor=(255, 0, 0),
+                       matchesMask=matchesMask[:],
+                       flags=cv.DrawMatchesFlags_DEFAULT)
+    img_3 = cv.drawMatchesKnn(img1, kp1, img2, kp2, matches[:], None, **draw_params)
+    cv.imwrite(filepath, img_3)

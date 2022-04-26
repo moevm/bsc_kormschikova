@@ -14,18 +14,20 @@ DEPTH_DATA = []
 def getDepthData():
     return DEPTH_DATA
 
-
+##TODO: 1 DIST FOR 3D
 def depth(kpFirst, kpSecond, goodMatches, cameraMove, img=None):
     kpFirstGood = []
     kpSecondGood = []
     depth = []
     dist = 0
 
+    ##TODO: check dist. horizon move only? or smthngelse
     if (len(cameraMove) > 1):  # tmp
         dist = np.sqrt((cameraMove[0][0] - cameraMove[1][0]) ** 2 + (cameraMove[0][1] - cameraMove[1][1]) ** 2 + (
                 cameraMove[0][2] - cameraMove[1][2]) ** 2)
     f = CAMERA_MTX[0][0]
     tmpStr = 'Move: ' + str(dist)[:4]
+    ## TODO: remove print
 
     if len(goodMatches) == 0 or dist == 0:
         depth.append(0)
@@ -37,25 +39,26 @@ def depth(kpFirst, kpSecond, goodMatches, cameraMove, img=None):
             cv.putText(tmpImg, '-1', (30, 850), cv.FONT_HERSHEY_PLAIN, 1.4, (0, 0, 0), 2, cv.LINE_AA)
             # print('len dist = 0, sh', tmpImg.shape)
         return kpFirstGood, depth, tmpImg
-
     for i, match in enumerate(goodMatches):
         tmp_f = kpFirst[match[0].queryIdx]
         tmp_s = kpSecond[match[0].trainIdx]
-        difX = np.sqrt(
-            ## TODO: rethink this
-            (tmp_f.pt[0] - tmp_s.pt[0]) ** 2 + (tmp_f.pt[1] - tmp_s.pt[1]) ** 2)
-        z = f * dist / difX
+        ## TODO: rethink this
+
+        # difX = np.sqrt(
+        #     (tmp_f.pt[0] - tmp_s.pt[0]) ** 2 + (tmp_f.pt[1] - tmp_s.pt[1]) ** 2)
+
+        difX = np.abs(tmp_f.pt[0] - tmp_s.pt[0])
+        z = f * dist / difX  #cm
         # if MIN_DRON_DISTANCE < z:
         #     depth.append(z / 100)
         #     kpFirstGood.append(kpFirst[match[0].queryIdx])
         #     kpSecondGood.append(kpSecond[match[0].trainIdx])
-        depth.append(z / 100)
+        depth.append(z / 100) # m
         kpFirstGood.append(kpFirst[match[0].queryIdx])
         kpSecondGood.append(kpSecond[match[0].trainIdx])
         # else:
         #     print('remove dist', z)
 
-    # print(depth)
     # z = (fT)/d
     if DEPTH_DATA_WRITE:
         DEPTH_DATA.append(depth)
@@ -81,7 +84,7 @@ def distanceMean3DTesting(coord, max):
         res = max
     return res
 
-
+##TODO: 2 DIST FOR 3D
 def coordinates_2d_to_3d(kp, depth, imgshape, img):  # testing! not finished
     if len(depth) == 0:
         return [[0, 0, -1]], [0, 0, 0]
@@ -89,24 +92,25 @@ def coordinates_2d_to_3d(kp, depth, imgshape, img):  # testing! not finished
         return [[0, 0, -1]], [0, 0, 0]
     pointCoord = []
     color = []
-    f = CAMERA_MTX[0][0] / 100
-    img_x_m = 2.78683 * f
-    img_y_m = 1.94073 * f
+    f = CAMERA_MTX[0][0] / 100 #m
+    img_x_m = 2.78683 * f #m
+    img_y_m = 1.94073 * f #m
     for i in range(len(kp)):
-        Cx = [kp[i].pt[0] - imgshape[1] / 2,
-              -kp[i].pt[1] + imgshape[0] / 2,
-              f]
-        len_px = (Cx[0] / (imgshape[1] / 2)) * img_x_m
-        len_py = (Cx[1] / (imgshape[0] / 2)) * img_y_m
-        lenPX = np.sqrt(len_px ** 2 + len_py ** 2)
-        lenCX = np.sqrt(f ** 2 + lenPX ** 2)
+        Cx = [kp[i].pt[0] - imgshape[1] / 2, #pixel
+              -kp[i].pt[1] + imgshape[0] / 2, #pixel
+              f] #m
+        len_px = (Cx[0] / (imgshape[1] / 2)) * img_x_m #m
+        len_py = (Cx[1] / (imgshape[0] / 2)) * img_y_m #m
+        lenPX = np.sqrt(len_px ** 2 + len_py ** 2) #m
+        lenCX = np.sqrt(f ** 2 + lenPX ** 2) #m вектор от камеры до точки на "экране"
         Cx[0] = len_px
         Cx[1] = len_py
-        Cx[2] = f
-        CX = np.dot(depth[i] / lenCX, Cx)
-        if CX[0] != 0 and CX[1] != 0 and CX[2] != 0:
-            pointCoord.append(list(CX))
-            color.append(img[int(kp[i].pt[1])][int(kp[i].pt[0])])
+        # Cx[2] = f
+        CX = np.dot(depth[i] / lenCX, Cx) #m
+        #TODO: for what?
+        # if (CX[0] != 0 and CX[1] != 0 and CX[2] != 0):
+        pointCoord.append(list(CX))
+        color.append(img[int(kp[i].pt[1])][int(kp[i].pt[0])])
     return pointCoord, color
 
 
@@ -165,7 +169,7 @@ def removeWrongCoord(coord, color, maxDepth, minDepth=0):
 
 
 def distanceMeanWeight(depth, kp, imgShape):
-    if (len(depth) < 1):
+    if (len(depth) <= 1):
         return 0
     maxLen = np.sqrt(imgShape[1] ** 2 + imgShape[0] ** 2)
     dictionary = dict(zip(depth, kp))
@@ -233,18 +237,20 @@ def createRotationMatrix(pitch, yaw, roll):
     R = np.dot(np.dot(Ryaw, Rpitch), Rroll)
     return R
 
-
+##TODO: 3 DIST FOR 3D. rename
 def pointToLocalDroneСoordinates(points, rotation, translation):
     newPoints = []
+    print(len(points))
     R = createRotationMatrix(rotation[0] * -1, rotation[1] * -1, rotation[2] * -1)
     for point in points:
-        tmp = np.array([[point[1]],  # (0, 1, 0)
-                        [point[2]],  # (0, 0, 1)
-                        [point[0]]])  # (1, 0, 0)
-        # tmp = np.array([[point[1]],
-        #        [point[2]],
-        #        [point[0]]])
-        tmp = np.dot(R, tmp)
-        tmp = tmp + translation.reshape(3, 1) / 100
+        tmp = np.array([point[0],  # (1, 0, 0)
+                        point[1],  # (0, 1, 0)
+                        point[2]])  # (, 0, 1)
+        tmp = np.dot(R, tmp) #m
+        tmp = np.array([tmp[1],  # (0, 1, 0)
+                        tmp[2],  # (0, 0, 1)
+                        tmp[0]])  # (1, 0, 0)
+        # tmp = np.dot(R, tmp) #m
+        tmp = tmp + (translation / 100) #translation - m
         newPoints.append(list(tmp))
     return newPoints

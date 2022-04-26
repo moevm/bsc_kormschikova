@@ -154,7 +154,7 @@ def GraphDistanceTrue(trueDistance, filename = ''):
     plt.clf()
     plt.close()
 
-
+##TODO: TRUE DIST?
 def graphDistance(true_distance, distanceMean, filter_mean, newMean, dataset_dir=''):
     true_distance = true_distance / 100
 
@@ -180,10 +180,9 @@ def graphDistance(true_distance, distanceMean, filter_mean, newMean, dataset_dir
     # dist = np.linalg.norm(distanceMean - filter_mean)
     # print(dist)
     plt.plot(x, distanceMean, label='exp')
-    plt.plot(x, filter_mean, label='filter')
-    # plt.plot(x, newMean, label='onlyBuilding')
+    # plt.plot(x, filter_mean, label='filter')
     plt.plot(x, y2, label='true')  # Plot more data on the axes...
     plt.xlabel('iteration')
     plt.ylabel('distance, m')
     plt.legend()
-    plt.savefig(dataset_dir + '/distance_data/t_meanDistance_filter_true_testingroof_0001.png')
+    plt.savefig(dataset_dir + '/distance_data/03.png')
