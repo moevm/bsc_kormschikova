@@ -205,15 +205,15 @@ def sift_algorithm(img, save=False, filepath='s.png'):
 
 
 
-FILE_3D = 'coordinates3D/tmp_start.txt'
-FILE_PLY = 'coordinates3D/tmp_start_ildie.ply' #
-dataset = 'datasets/new_datasets/with_start'
-io_ply_file.create_point_cloud(FILE_3D, FILE_PLY)
-
+FILE_3D = 'coordinates3D/dt_old26-04.txt'
+FILE_PLY = 'coordinates3D/dt_old26-04.ply' #
+dataset = 'datasets/dataset_06_new'
 testing(dataset)
 
-# FILE_PLY = 'coordinates3D/tmp_start_d2_offset.ply' #
+# io_ply_file.create_point_cloud(FILE_3D, FILE_PLY)
 
+# FILE_PLY = 'coordinates3D/tmp_start_d2_offset.ply' #
+exit(0)
 #TODO: add to dataset unpack
 offset_tmp = np.genfromtxt(dataset + "/" + "start_trajectory.txt", dtype=str)
 print(offset_tmp)

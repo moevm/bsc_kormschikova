@@ -217,7 +217,6 @@ def closeFileToWrite3DCoord():
     return
 
 def testRANSAC(coord, color):
-    print('len',len(coord))
 
     if len(coord) < 4:
         return coord, color
@@ -225,7 +224,6 @@ def testRANSAC(coord, color):
     newColor = []
     plane1 = ransac.Plane()
     best_eq, best_inliers = plane1.fit(np.array(coord), 1)
-    print( best_inliers)
     for i in best_inliers:
         newCoord.append(coord[i])
         newColor.append(color[i])

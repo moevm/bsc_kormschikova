@@ -44,10 +44,10 @@ def depth(kpFirst, kpSecond, goodMatches, cameraMove, img=None):
         tmp_s = kpSecond[match[0].trainIdx]
         ## TODO: rethink this
 
-        # difX = np.sqrt(
-        #     (tmp_f.pt[0] - tmp_s.pt[0]) ** 2 + (tmp_f.pt[1] - tmp_s.pt[1]) ** 2)
+        difX = np.sqrt(
+            (tmp_f.pt[0] - tmp_s.pt[0]) ** 2 + (tmp_f.pt[1] - tmp_s.pt[1]) ** 2)
 
-        difX = np.abs(tmp_f.pt[0] - tmp_s.pt[0])
+        # difX = np.abs(tmp_f.pt[0] - tmp_s.pt[0])
         z = f * dist / difX  #cm
         # if MIN_DRON_DISTANCE < z:
         #     depth.append(z / 100)
@@ -240,7 +240,6 @@ def createRotationMatrix(pitch, yaw, roll):
 ##TODO: 3 DIST FOR 3D. rename
 def pointToLocalDroneСoordinates(points, rotation, translation):
     newPoints = []
-    print(len(points))
     R = createRotationMatrix(rotation[0] * -1, rotation[1] * -1, rotation[2] * -1)
     for point in points:
         tmp = np.array([point[0],  # (1, 0, 0)
