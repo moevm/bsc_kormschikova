@@ -18,22 +18,37 @@ def detect_matches(firstDes, secondDes):
     search_params = dict(checks=50)  # or pass empty dictionary
     flann = cv.FlannBasedMatcher(index_params, search_params)
     matches = flann.knnMatch(firstDes, secondDes, k=2)
-    goodMatches = []
 
+    goodMatches = []
+    # badm = []
+    # TODO: for skip N match del
+    # j = 240
     for i, (m, n) in enumerate(matches):
         if m.distance < THRESHOLD_OF_MATCHES * n.distance:
+            # if j != 0:
+            #     j -= 1
+            #     continue
             goodMatches.append(matches[i])
-    return goodMatches
+            #TODO: for only N match del
+            # if len(goodMatches) > 10:
+            #     return goodMatches
+        # else:
+        #     badm.append(matches[i])
+    return goodMatches#, matches, badm
 
 
 def save_matches_img(matches, img1, kp1, img2, kp2, filepath='matches.jpg'):
+    matches = matches[:int(len(matches)/4)]
     matchesMask = [[1, 0] for i in range(len(matches))]
-    draw_params = dict(matchColor=(0, 255, 0),
-                       singlePointColor=(255, 0, 0),
+    draw_params = dict(#matchColor=(0, 255, 0),
+                       #singlePointColor=(255, 0, 0),
                        matchesMask=matchesMask[:],
                        flags=cv.DrawMatchesFlags_DEFAULT)
     img_3 = cv.drawMatchesKnn(img1, kp1, img2, kp2, matches[:], None, **draw_params)
     cv.imwrite(filepath, img_3)
+    # cv.imshow('a', img_3)
+    # cv.waitKey(0)
+    return
 
 
 def draw_matches_img(matches, img1, kp1, img2, kp2):

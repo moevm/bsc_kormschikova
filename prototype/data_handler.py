@@ -179,10 +179,10 @@ def graphDistance(true_distance, distanceMean, filter_mean, newMean, dataset_dir
     x = [a for a in range(len(distanceMean))]
     # dist = np.linalg.norm(distanceMean - filter_mean)
     # print(dist)
-    plt.plot(x, distanceMean, label='exp')
-    # plt.plot(x, filter_mean, label='filter')
-    plt.plot(x, y2, label='true')  # Plot more data on the axes...
+    plt.plot(x, distanceMean,'--b', label='exp', alpha=0.7)
+    plt.plot(x, filter_mean,'-',color='orange', label='filter',  alpha=0.7)
+    plt.plot(x, y2, '-.g',  label='true', alpha=0.7)  # Plot more data on the axes...
     plt.xlabel('iteration')
     plt.ylabel('distance, m')
-    plt.legend()
-    plt.savefig(dataset_dir + '/distance_data/03.png')
+    plt.legend(prop={"size":16})
+    plt.savefig(dataset_dir + '/distance_data/markers_4.png')

@@ -126,7 +126,7 @@ def detectLine(img):
 
 
 def videoWrite(imgArr, size, name=''):
-    out = cv.VideoWriter(name + '_linesdetect_3.avi', cv.VideoWriter_fourcc(*'DIVX'), 3, size)
+    out = cv.VideoWriter(name + '.avi', cv.VideoWriter_fourcc(*'DIVX'), 3, size)
     for img in imgArr:
         out.write(img)
     out.release()

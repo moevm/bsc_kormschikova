@@ -1,10 +1,10 @@
 import numpy as np
 import cv2 as cv
-from constant_parameters import HORIZONTAL_FOV, VERTICAL_FOV, MAX_DRON_DISTANCE, MIN_DRON_DISTANCE
+from constant_parameters import HORIZONTAL_FOV, VERTICAL_FOV, MAX_DRON_DISTANCE, MIN_DRON_DISTANCE, CAMERA_MTX
 
-CAMERA_MTX = np.array([[1000.95935, 0.0, 799.6486],
-                       [0.0, 1000.95935, 454.6965],
-                       [0.0, 0.0, 1.0]])
+# CAMERA_MTX = np.array([[1000.95935, 0.0, 799.6486],
+#                        [0.0, 1000.95935, 454.6965],
+#                        [0.0, 0.0, 1.0]])
 MIN_MATCH_COUNT = 7
 DEPTH_DATA_WRITE = True
 DEPTH_TO_IMG = True
@@ -47,7 +47,6 @@ def depth(kpFirst, kpSecond, goodMatches, cameraMove, img=None):
         difX = np.sqrt(
             (tmp_f.pt[0] - tmp_s.pt[0]) ** 2 + (tmp_f.pt[1] - tmp_s.pt[1]) ** 2)
 
-        # difX = np.abs(tmp_f.pt[0] - tmp_s.pt[0])
         z = f * dist / difX  #cm
         # if MIN_DRON_DISTANCE < z:
         #     depth.append(z / 100)
@@ -84,76 +83,68 @@ def distanceMean3DTesting(coord, max):
         res = max
     return res
 
-##TODO: 2 DIST FOR 3D
-def coordinates_2d_to_3d(kp, depth, imgshape, img):  # testing! not finished
-    if len(depth) == 0:
-        return [[0, 0, -1]], [0, 0, 0]
-    if depth[0] == -1:
-        return [[0, 0, -1]], [0, 0, 0]
-    pointCoord = []
-    color = []
-    f = CAMERA_MTX[0][0] / 100 #m
-    img_x_m = 2.78683 * f #m
-    img_y_m = 1.94073 * f #m
-    for i in range(len(kp)):
-        Cx = [kp[i].pt[0] - imgshape[1] / 2, #pixel
-              -kp[i].pt[1] + imgshape[0] / 2, #pixel
-              f] #m
-        len_px = (Cx[0] / (imgshape[1] / 2)) * img_x_m #m
-        len_py = (Cx[1] / (imgshape[0] / 2)) * img_y_m #m
-        lenPX = np.sqrt(len_px ** 2 + len_py ** 2) #m
-        lenCX = np.sqrt(f ** 2 + lenPX ** 2) #m вектор от камеры до точки на "экране"
-        Cx[0] = len_px
-        Cx[1] = len_py
-        # Cx[2] = f
-        CX = np.dot(depth[i] / lenCX, Cx) #m
-        #TODO: for what?
-        # if (CX[0] != 0 and CX[1] != 0 and CX[2] != 0):
-        pointCoord.append(list(CX))
-        color.append(img[int(kp[i].pt[1])][int(kp[i].pt[0])])
-    return pointCoord, color
 
-
-#
-#
-# def coordinates_2d_to_3d(kp, depth, imgshape, img): #testing! OLD
-#     if (len(depth) == 0):
-#         return [[0, 0, -1]], [0, 0, 0], depth
-#     if(depth[0] == -1):
-#         return [[0, 0, -1]], [0,0,0], depth
-#     # print(depth)
+# def coordinates_2d_to_3d(kp, depth, imgshape, img):  # testing! not finished
+#     if len(depth) == 0:
+#         return [[0, 0, -1]], [0, 0, 0]
+#     if depth[0] == -1:
+#         return [[0, 0, -1]], [0, 0, 0]
 #     pointCoord = []
 #     color = []
-#     f = CAMERA_MTX[0][0]/100
+#     f = CAMERA_MTX[0][0] / 100 #m
+#     img_x_m = 2.78683 * f / 2 #m
+#     img_y_m = 1.94073 * f / 2 #m
 #     for i in range(len(kp)):
-#         Cx = [kp[i].pt[0] - imgshape[1]/2,
-#               -kp[i].pt[1] + imgshape[0]/2,
-#               f]
-#         lenpxX = (Cx[0]/(imgshape[1]/2))*f
-#         angle = 90 - VERTICAL_FOV/2
-#         lenpy = f * np.sin(np.pi/180*(VERTICAL_FOV/2))/np.sin(np.pi/180*angle)
-#         lenpxY = (Cx[1] / (imgshape[0]/2)) * lenpy
-#         lenp_x = np.sqrt(lenpxX**2 + lenpxY**2)
-#         lenCx = np.sqrt(f**2+lenp_x**2)
-#         Cx[0] = lenpxX
-#         Cx[1] = lenpxY
-#         Cx[2] = lenCx
-#         # print('DEPTH- ', depth[i])
-#         CX = np.dot(depth[i]/lenCx, Cx)
-#         print(depth[i], CX[2])
-#         # depth[i] = CX[2]
-#         # print(CX, depth[i])
-#         # if(CX[2] <= maxDepth):
+#         Cx = [kp[i].pt[0] - imgshape[1] / 2, #pixel
+#               -kp[i].pt[1] + imgshape[0] / 2, #pixel
+#               f] #m
+#         len_px = (Cx[0] / (imgshape[1] / 2)) * img_x_m #m
+#         len_py = (Cx[1] / (imgshape[0] / 2)) * img_y_m #m
+#         lenPX = np.sqrt(len_px ** 2 + len_py ** 2) #m
+#         lenCX = np.sqrt(f ** 2 + lenPX ** 2) #m вектор от камеры до точки на "экране"
+#         Cx[0] = len_px
+#         Cx[1] = len_py
+#         # Cx[2] = f
+#         # koef = depth[i] / lenCX
+#         # tmp =  np.dot(koef, Cx)
+#         CX = np.dot(depth[i] / lenCX, Cx) #m
+#         #TODO: for what?
+#         # if (CX[0] != 0 and CX[1] != 0 and CX[2] != 0):
 #         pointCoord.append(list(CX))
 #         color.append(img[int(kp[i].pt[1])][int(kp[i].pt[0])])
-#         # print('color', color[i])
-#     # visualization.plot3Dcoord(pointCoord)
-#     # print(len(pointCoord), pointCoord)
-#     # pointCoord = list(filter(lambda x:  x[2] <= maxDepth, pointCoord))
-#     # print(len(pointCoord), pointCoord)
-#     # cv.waitKey(0)
+#     return pointCoord, color
 #
-#     return pointCoord, color#, depth
+
+def coordinates_2d_to_3d_old(kp, depth, imgshape, img):
+    if (len(depth) == 0):
+        return [[0, 0, -1]], [0, 0, 0], depth
+    if(depth[0] == -1):
+        return [[0, 0, -1]], [0,0,0], depth
+    # print(depth)
+    pointCoord = []
+    color = []
+    f = CAMERA_MTX[0][0]/100
+    for i in range(len(kp)):
+        Cx = [kp[i].pt[0] - imgshape[1]/2,#pixel
+              -kp[i].pt[1] + imgshape[0]/2,#pixel
+              f]   #m
+        lenpxX = (Cx[0]/(imgshape[1]/2))*f #m
+
+        angle = 90 - VERTICAL_FOV/2
+        lenpy = f * np.sin(np.pi/180*(VERTICAL_FOV/2))/np.sin(np.pi/180*angle)#m  половина стороны изображения
+        lenpxY = (Cx[1] / (imgshape[0]/2)) * lenpy#m
+
+        lenp_x = np.sqrt(lenpxX**2 + lenpxY**2)#m
+        lenCX = np.sqrt(f**2+lenp_x**2) #m вектор от камеры до точки на "экране"
+        Cx[0] = lenpxX
+        Cx[1] = lenpxY
+        Cx[2] = lenCX #or f idk
+        CX = np.dot(depth[i]/lenCX, Cx)
+        # depth[i] = CX[2]
+        # if(CX[2] <= maxDepth):
+        pointCoord.append(list(CX))
+        color.append(img[int(kp[i].pt[1])][int(kp[i].pt[0])])
+    return pointCoord, color#, depth
 
 
 def removeWrongCoord(coord, color, maxDepth, minDepth=0):
@@ -176,6 +167,8 @@ def distanceMeanWeight(depth, kp, imgShape):
     sigma = np.std(depth)
     mean = np.mean(depth)
     depthList = list(filter(lambda x: sigma - mean <= x[0] <= mean + sigma, dictionary.items()))
+    # depthList = list(filter(lambda x: MIN_DRON_DISTANCE <= x[0] <= MAX_DRON_DISTANCE, dictionary.items()))
+
     meanDist = 0
     sumWeight = 0
     for i in depthList:
@@ -186,11 +179,9 @@ def distanceMeanWeight(depth, kp, imgShape):
     if (sumWeight != 0):
         meanDist /= sumWeight
     else:
-        # print('wtf', depthList)
         for i in depthList:
             fromCenter = (i[1].pt[0] - imgShape[1] / 2, - i[1].pt[1] + imgShape[0] / 2)
             weight = 1 - np.sqrt(fromCenter[0] ** 2 + fromCenter[1] ** 2) / maxLen
-            # print(weight, fromCenter)
             sumWeight += weight
             meanDist += i[0] * weight
         meanDist = -1
@@ -206,6 +197,7 @@ def drawDepthCercle(kp_pt, depth, img):
     img = cv.cvtColor(img, cv.COLOR_GRAY2BGR)
 
     for i, pt in enumerate(kp_pt):
+
         red = 255 - depth[i] * 255
         blue = 0
         green = 0
@@ -217,14 +209,19 @@ def drawDepthCercle(kp_pt, depth, img):
             red = 240
         color = (blue, green, red)  # bgr
         point = (int(pt.pt[0]), int(pt.pt[1]))
-        img = cv.circle(img, point, 10, color, -1)
-        tmpStr = str(depthTMP[i])[:4] + " m. "
-        cv.putText(img, tmpStr, (point[0] + 5, point[1] - 25), cv.FONT_HERSHEY_PLAIN, 1.4, (80, 0, 255), 2, cv.LINE_AA)
+        img = cv.circle(img, point, 3, color, -1)
+        if i % 3 != 0:
+            continue
+        tmpStr = str(depthTMP[i])[:4] + "m."
+        cv.putText(img, tmpStr, (point[0] + 5, point[1] - 25), cv.FONT_HERSHEY_PLAIN, 1, (80, 0, 255), 1, cv.LINE_AA)
 
     return img
 
 
 def createRotationMatrix(pitch, yaw, roll):
+    pitch = np.deg2rad(pitch)
+    yaw = np.deg2rad(yaw)
+    roll = np.deg2rad(roll)
     Ryaw = np.array([[np.cos(yaw), -np.sin(yaw), 0],
                      [np.sin(yaw), np.cos(yaw), 0],
                      [0, 0, 1]])  # z
@@ -238,18 +235,22 @@ def createRotationMatrix(pitch, yaw, roll):
     return R
 
 ##TODO: 3 DIST FOR 3D. rename
-def pointToLocalDroneСoordinates(points, rotation, translation):
+def pointsFromLocalDroneСoordinates(points, rotation, translation):
     newPoints = []
     R = createRotationMatrix(rotation[0] * -1, rotation[1] * -1, rotation[2] * -1)
     for point in points:
-        tmp = np.array([point[0],  # (1, 0, 0)
-                        point[1],  # (0, 1, 0)
-                        point[2]])  # (, 0, 1)
-        tmp = np.dot(R, tmp) #m
-        tmp = np.array([tmp[1],  # (0, 1, 0)
-                        tmp[2],  # (0, 0, 1)
-                        tmp[0]])  # (1, 0, 0)
+        tmp = np.array([point[2],  # (0, 0, 1)
+                        point[0],  # (1, 0, 0)
+                       point[1]])  # (0, 1, 0)
+        # tmp = np.array([point[0],  # (1, 0, 0)
+        #                 point[1],  # (0, 1, 0)
+        #                 point[2]])  # (0, 0, 1)
         # tmp = np.dot(R, tmp) #m
+        # tmp = np.array([tmp[1],  # (0, 1, 0)
+        #                 tmp[2],  # (0, 0, 1)
+        #                 tmp[0]])  # (1, 0, 0)
+        tmp = np.dot(R, tmp) #m
+
         tmp = tmp + (translation / 100) #translation - m
         newPoints.append(list(tmp))
     return newPoints

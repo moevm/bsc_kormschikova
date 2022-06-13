@@ -1,4 +1,9 @@
-HORIZONTAL_FOV = 90
-VERTICAL_FOV = 59
-MIN_DRON_DISTANCE = 300 #cm
-MAX_DRON_DISTANCE = 25 #m
+import numpy as np
+
+HORIZONTAL_FOV = 90  # горизонтальное поле зрения камеры
+VERTICAL_FOV = 59  # вертикальное поле зрения камеры
+CAMERA_MTX = np.array([[1000.95935, 0.0, 799.6486],
+                       [0.0, 1000.95935, 454.6965],
+                       [0.0, 0.0, 1.0]])  # матрица камеры
+MIN_DRON_DISTANCE = 2  # m минимальная дистанция, на которую может подлететь дрон
+MAX_DRON_DISTANCE = 30  # m максимальная дистанция, на которую может подлететь дрон

@@ -26,7 +26,10 @@ def write_ply_file(filename, points, offset):
     #                "property float x\n", "property float y\n", "property float z\n",
     #                                          "end_header\n"]
     file.writelines(file_header)
+    i = 0
+    print('Create ply file. Points:', len(points))
     for point in points:
+        i+=1
         file.write(str(point[0]+offset[0]) + " " + str(point[1]+offset[1]) + " " + str(point[2]+offset[2]) + " " + str(int(point[3]/100 % 256))+ " " + str(int(point[4]/100 % 256))+ " " + str(int(point[5]/100% 256))+ "\n")
         # file.write(str(point[0]+offset[0]) + " " + str(point[1]+offset[1]) + " " + str(point[2]+offset[2]) + " " + str(int(point[3]))+ " " + str(int(point[4]))+ " " + str(int(point[5]))+ "\n")
 
@@ -34,15 +37,18 @@ def write_ply_file(filename, points, offset):
 
 def create_point_cloud(vertecies_filename, point_cloud_filename, offset = [0,0,0]):
     house_vertecies = np.zeros((1, 6))
-
     file = open(vertecies_filename, "r")
     lines = [line[:-2] for line in file]
+    # print('open file, lines:', len(lines) )
     file.close()
+    n = 150
     for i in range(len(lines)):
-        frame_vertecies = np.array([float(n) * 100.0 for n in lines[i].split(" ") if n and n != "\n"]) #for normal view in meshlab
-        # frame_vertecies = np.array([float(n) for n in lines[i].split(" ") if n and n != "\n"])
+        # print(i)
+        # frame_vertecies = np.array([float(n) * 100.0 for n in lines[i].split(" ") if n and n != "\n"]) #for normal view in meshlab
+        frame_vertecies = np.array([float(n) for n in lines[i].split(" ") if n and n != "\n"])
         frame_vertecies = np.reshape(frame_vertecies, newshape=(-1, 6))
         for frame_vertex in frame_vertecies:
             house_vertecies = np.append(house_vertecies, np.reshape(frame_vertex, (1, 6)), axis=0)
+
     house_vertecies = np.where(abs(house_vertecies) <= 30000, house_vertecies, 30000)
     write_ply_file(point_cloud_filename, house_vertecies[1:], offset)####1??? RETURN LATER
