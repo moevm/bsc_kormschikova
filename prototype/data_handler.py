@@ -154,7 +154,7 @@ def GraphDistanceTrue(trueDistance, filename = ''):
     plt.clf()
     plt.close()
 
-##TODO: TRUE DIST?
+
 def graphDistance(true_distance, distanceMean, filter_mean, newMean, dataset_dir=''):
     true_distance = true_distance / 100
 

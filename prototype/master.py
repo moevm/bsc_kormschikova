@@ -34,10 +34,17 @@ COORD_TMP = []
 COLOR_TMP = []
 TMP_TIME_PLY = [0]
 
-##TODO: true dist
 
 
 def dataset_processing(dataset_dir, file3d_name, filePLY_name, depth_img_flag):
+    """
+    Данная функция позволяет обработать готовый датасет
+    :param dataset_dir: путь до папки с датасетом
+    :param file3d_name:  путь для хранения txt файла с точками
+    :param filePLY_name: путь для хранения ply файла с точками
+    :param depth_img_flag: нужно ли сохранять промежуточные файлы с дистанцией
+    :return:
+    """
     files = glob(dataset_dir + '/images/*.png')
     files.sort()
     img1_ = files[0]
@@ -115,53 +122,7 @@ def step_processing(img_second_bgr, camera_move, ground_truth_r,  delta_t = 0, t
     MEAN_DISTANCES.append(mean_distance)#only for graph
     ##TODO: KALMAN FILTER FIX
     filter_distance = Kalman.step_kalman(delta_t, mean_distance, prev_distance)#mdff
-    # print('filter ', filter_distance)
-    # if RFlag or LFlag:
-    #     if RFlag:
-    #         depth_r, depth_overseas_r = detect_border.removeDistanceBeyondBorder(depth, kpFirstGood, 'r')
-    #         # print('RFLAG DIST', np.mean(depth_r), np.mean(depth_overseas_r))
-    #         # if DISTANCE_BUILD == MAX_DISTANCE: #means there were no build
-    #         #     print('from nothing')
-    #         #
-    #         #     filter_distance = np.mean(depth_r)
-    #         #     DISTANCE_BUILD = np.mean(depth_r) + DELTA_DISTANCE_BUILDINGS + 1
-    #         #
-    #         # else:
-    #         filter_distance = np.mean(depth_overseas_r)
-    #
-    #     if LFlag:
-    #         depth_l, depth_overseas_l = detect_border.removeDistanceBeyondBorder(depth, kpFirstGood, 'l')
-    #         # print('LFLAG DIST', np.mean(depth_l), np.mean(depth_overseas_l))
-    #         # if DISTANCE_BUILD == MAX_DISTANCE:
-    #         #     print('from nothing')
-    #         #     filter_distance = np.mean(depth_l)
-    #         #     DISTANCE_BUILD = np.mean(depth_l) + DELTA_DISTANCE_BUILDINGS + 1
-    #         # else:
-    #         filter_distance = np.mean(depth_overseas_l)
-    #
-    #     if np.abs(DISTANCE_BUILD - filter_distance) >= DELTA_DISTANCE_BUILDINGS:
-    #         print('newBilding', prev_distance, filter_distance)
-    #         DISTANCE_BUILD = filter_distance
-    #         Kalman.reset_kalman(filter_distance)
-    #         MEAN_DISTANCES.pop()
-    #         MEAN_DISTANCES.append(filter_distance)
-    #         # prev_distance
-    #         # cv.imshow('noB', TMPIMG)
-    #         # cv.waitKey(0)
-    #     else:
-    #         print('FALSE BORDER')
-    #         RFlag = False
-    #         LFlag = False
-    #         DISTANCE_BUILD = MAX_DISTANCE
 
-    # coord, color = distance.removeWrongCoord(coord, color, filter_distance + DELTA_DISTANCE_POINTS,
-    #                                          filter_distance - DELTA_DISTANCE_POINTS)
-
-    # coord, color = distance.removeWrongCoord(coord, color, MAX_DISTANCE, 3)
-    # print(len(coord))
-    # coord, color = testRANSAC(coord, color)
-
-    #
     if filter_distance >= MAX_DISTANCE:
         # print('thereIsNoBuilding', filter_distance, DISTANCE_BUILD)
         DISTANCE_BUILD = MAX_DISTANCE

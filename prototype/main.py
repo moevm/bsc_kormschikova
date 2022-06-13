@@ -4,16 +4,14 @@ from dataset_unpack import dataset_unpack
 from glob import glob
 import data_handler
 import detect_border as dbe
-import distance
-import matplotlib.pyplot as plt
 import master
 import time
-# import visualization
 import re
 
 
-
-import io_ply_file
+"""
+Данный файл предназначен только для тестирования 
+"""
 
 # TODO написать функцию для изменения различных констант: матрицы камеры и тп и тд
 

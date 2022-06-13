@@ -14,20 +14,17 @@ DEPTH_DATA = []
 def getDepthData():
     return DEPTH_DATA
 
-##TODO: 1 DIST FOR 3D
 def depth(kpFirst, kpSecond, goodMatches, cameraMove, img=None):
     kpFirstGood = []
     kpSecondGood = []
     depth = []
     dist = 0
 
-    ##TODO: check dist. horizon move only? or smthngelse
     if (len(cameraMove) > 1):  # tmp
         dist = np.sqrt((cameraMove[0][0] - cameraMove[1][0]) ** 2 + (cameraMove[0][1] - cameraMove[1][1]) ** 2 + (
                 cameraMove[0][2] - cameraMove[1][2]) ** 2)
     f = CAMERA_MTX[0][0]
     tmpStr = 'Move: ' + str(dist)[:4]
-    ## TODO: remove print
 
     if len(goodMatches) == 0 or dist == 0:
         depth.append(0)
@@ -42,7 +39,6 @@ def depth(kpFirst, kpSecond, goodMatches, cameraMove, img=None):
     for i, match in enumerate(goodMatches):
         tmp_f = kpFirst[match[0].queryIdx]
         tmp_s = kpSecond[match[0].trainIdx]
-        ## TODO: rethink this
 
         difX = np.sqrt(
             (tmp_f.pt[0] - tmp_s.pt[0]) ** 2 + (tmp_f.pt[1] - tmp_s.pt[1]) ** 2)
@@ -108,8 +104,6 @@ def distanceMean3DTesting(coord, max):
 #         # koef = depth[i] / lenCX
 #         # tmp =  np.dot(koef, Cx)
 #         CX = np.dot(depth[i] / lenCX, Cx) #m
-#         #TODO: for what?
-#         # if (CX[0] != 0 and CX[1] != 0 and CX[2] != 0):
 #         pointCoord.append(list(CX))
 #         color.append(img[int(kp[i].pt[1])][int(kp[i].pt[0])])
 #     return pointCoord, color
@@ -234,7 +228,6 @@ def createRotationMatrix(pitch, yaw, roll):
     R = np.dot(np.dot(Ryaw, Rpitch), Rroll)
     return R
 
-##TODO: 3 DIST FOR 3D. rename
 def pointsFromLocalDroneСoordinates(points, rotation, translation):
     newPoints = []
     R = createRotationMatrix(rotation[0] * -1, rotation[1] * -1, rotation[2] * -1)
